@@ -612,6 +612,7 @@ cd /
 # Start iSCSI
 if hash iscsistart >/dev/null 2>&1
 then
+    [ ! -e "{GK_NET_LOCKFILE}" ] && start_network
 	start_iscsi
 fi
 
