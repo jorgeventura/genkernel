@@ -2470,7 +2470,8 @@ cleanup() {
 		if [ "${REAL_ROOT}" = "/dev/nfs" ]
 		then
 			warn_msg "real_root=/dev/nfs; Will not bring down interface ${GK_NET_IFACE} ..."
-		else
+		elif [ -z "${IP}" ]
+        then
 			kill_network
 		fi
 	fi

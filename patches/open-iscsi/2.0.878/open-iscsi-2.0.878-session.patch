@@ -1,0 +1,50 @@
+diff --git a/usr/initiator.c b/usr/initiator.c
+index f4c9e02..68f89dd 100644
+--- a/usr/initiator.c
++++ b/usr/initiator.c
+@@ -1815,7 +1815,7 @@ static int __session_login_task(node_rec_t *rec, queue_task_t *qtask)
+ 		if (rec->session.multiple)
+ 			log_debug(2, "Adding a copy of an existing session");
+ 		else
+-			return ISCSI_ERR_SESS_EXISTS;
++			return ISCSI_SUCCESS;
+ 	}
+ 
+ 	t = iscsi_sysfs_get_transport_by_name(rec->iface.transport_name);
+@@ -1936,7 +1936,7 @@ session_login_task(node_rec_t *rec, queue_task_t *qtask)
+ 		 */
+ 		return ISCSI_SUCCESS;
+ 	}
+-	return rc;
++	return ISCSI_SUCCESS;
+ }
+ 
+ static void session_login_task_retry(void *data)
+diff --git a/usr/iscsistart.c b/usr/iscsistart.c
+index d3616ea..c24a6c3 100644
+--- a/usr/iscsistart.c
++++ b/usr/iscsistart.c
+@@ -247,21 +247,11 @@ static int login_session(struct node_rec *rec)
+ 		rc = iscsid_exec_req(&req, &rsp, 0, ISCSID_REQ_TIMEOUT);
+ 		if (rc == 0) {
+ 			return rc;
+-		} else if (rc == ISCSI_ERR_ISCSID_NOTCONN) {
+-			ts.tv_sec = msec / 1000;
+-			ts.tv_nsec = (msec % 1000) * 1000000L;
+-
+-			/* On EINTR, retry nanosleep with remaining time. */
+-			while ((err = nanosleep(&ts, &ts)) < 0 &&
+-			       errno == EINTR);
+-			if (err < 0)
+-				break;
+-		} else {
+-			break;
+ 		}
+ 	}
+ 
+-	iscsi_err_print_msg(rc);
++    if (rc != ISCSI_ERR_ISCSID_NOTCONN)
++	   iscsi_err_print_msg(rc);
+ 	return rc;
+ }
+ 
