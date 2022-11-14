@@ -2179,6 +2179,18 @@ start_network() {
 			bad_msg "Failed to start udhcpc for interface ${GK_NET_IFACE}!"
 			return 1
 		fi
+
+        # Route format, xx.xx.xx.xx/nn:yy.yy.yy.yy
+		if [ -n "${GK_NET_ROUTES}" ]
+		then
+			local route=
+			for route in ${GK_NET_ROUTES}
+			do
+				good_msg "Adding additional route '${route%:*}' via '${route#*:}' on ${GK_NET_IFACE} ..."
+				run ip route add "${route%:*}" via "${route#*:}" dev "${GK_NET_IFACE}"
+			done
+		fi
+
 	elif echo "${IP}" | grep -qE ':|,'
 	then
 		if is_interface_up
@@ -2211,14 +2223,15 @@ start_network() {
 
 		good_msg "Setting address '${IP}' on ${GK_NET_IFACE} ..."
 		run ip addr add "${IP}" dev "${GK_NET_IFACE}"
-
+        
+        # Route format, xx.xx.xx.xx/nn:yy.yy.yy.yy
 		if [ -n "${GK_NET_ROUTES}" ]
 		then
 			local route=
 			for route in ${GK_NET_ROUTES}
 			do
-				good_msg "Adding additional route '${route}' on ${GK_NET_IFACE} ..."
-				run ip route add "${route}" dev "${GK_NET_IFACE}"
+				good_msg "Adding additional route '${route%:*}' via '${route#*:}' on ${GK_NET_IFACE} ..."
+				run ip route add "${route%:*}" via "${route#*:}" dev "${GK_NET_IFACE}"
 			done
 		fi
 
